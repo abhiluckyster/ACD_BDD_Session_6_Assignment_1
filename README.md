@@ -6,22 +6,18 @@ import java.io.IOException;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.IntWritable;
-public class OlympicMapper extends Mapper<LongWritable, Text, Text, IntWritable>{
+public class OlympicMapper extends Mapper<LongWritable, Text, Text, Text>{
 @Override
 public void map(LongWritable key, Text value, Context context)
 		throws IOException, InterruptedException{
-	int sum=1;
 	String values = value.toString();
 	String[] records = values.split("\t");
 	if(records[5].compareToIgnoreCase("Swimming")==0)
 	{
-		context.write(new Text(records[2]), new IntWritable(sum));
+		context.write(new Text(records[2]), new Text(records[9]));
 	}
 }
 }
-
-
 
 package Olympic;
 
@@ -30,23 +26,22 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-public class OlympicReducer extends Reducer <Text, IntWritable, Text, IntWritable>{
+public class OlympicReducer extends Reducer <Text, Text, Text, IntWritable>{
 	
 	@Override
-	protected void reduce(Text key, Iterable<IntWritable> values, Context context)
+	protected void reduce(Text key, Iterable<Text> value, Context context)
 	throws IOException, InterruptedException
 	{
 		int sum=0;
-		for(IntWritable value : values)
-		{
-			sum=sum+value.get();
-		}
+			    for(Text values : value)
+			    {
+				String medals = values.toString();
+				int total= Integer.parseInt(medals);
+				sum=sum+total;
+			    }
 		context.write(key, new IntWritable(sum));
 	}
 }
-
-
-
 
 package Olympic;
 import org.apache.hadoop.conf.Configured;
